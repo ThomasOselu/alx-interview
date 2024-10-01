@@ -1,54 +1,57 @@
 #!/usr/bin/python3
-"""Defines island perimeter finding function."""
+"""Module defining isWinner function."""
 
 
 def isWinner(x, nums):
-    '''Prototype: def isWinner(x, nums)
-    where x is the number of rounds and nums is an array of n
-    Return: name of the player that won the most rounds
-    If the winner cannot be determined, return None
-    '''
-    def sieve_of_eratosthenes(max_n):
-        primes = [True] * (max_n + 1)
-        primes[0] = primes[1] = False  # 0 and 1 are not primes
-        for i in range(2, int(max_n ** 0.5) + 1):
-            if primes[i]:
-                for j in range(i * i, max_n + 1, i):
-                    primes[j] = False
-        return [i for i, is_prime in enumerate(primes) if is_prime]
+    """Function to get who has won in prime game"""
+    mariaWinsCount = 0
+    benWinsCount = 0
 
-    # Precompute all primes up to the largest n in nums
-    max_n = max(nums)
-    primes = sieve_of_eratosthenes(max_n)
+    for num in nums:
+        roundsSet = list(range(1, num + 1))
+        primesSet = primes_in_range(1, num)
 
-    # Game simulation
-    maria_wins = 0
-    ben_wins = 0
-
-    for n in nums:
-        # Initialize game state for numbers up to n
-        available_primes = [p for p in primes if p <= n]
-        if not available_primes:
-            ben_wins += 1  # If no primes, Ben wins automatically
+        if not primesSet:
+            benWinsCount += 1
             continue
 
-        turn = 0  # Maria's turn if 0, Ben's turn if 1
-        while available_primes:
-            current_prime = available_primes.pop(0)
-            # Remove the current prime and all its multiples
-            available_primes = [p for p in available_primes if p % current_prime != 0]
-            turn = 1 - turn  # Switch turns
+        isMariaTurns = True
 
-        # If turn is 0, it means Ben made the last move, so Maria wins
-        if turn == 1:
-            maria_wins += 1
-        else:
-            ben_wins += 1
+        while(True):
+            if not primesSet:
+                if isMariaTurns:
+                    benWinsCount += 1
+                else:
+                    mariaWinsCount += 1
+                break
 
-    # Determine who won the most games
-    if maria_wins > ben_wins:
-        return "Maria"
-    elif ben_wins > maria_wins:
-        return "Ben"
-    else:
-        return None
+            smallestPrime = primesSet.pop(0)
+            roundsSet.remove(smallestPrime)
+
+            roundsSet = [x for x in roundsSet if x % smallestPrime != 0]
+
+            isMariaTurns = not isMariaTurns
+
+    if mariaWinsCount > benWinsCount:
+        return "Winner: Maria"
+
+    if mariaWinsCount < benWinsCount:
+        return "Winner: Ben"
+
+    return None
+
+
+def is_prime(n):
+    """Returns True if n is prime, else False."""
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def primes_in_range(start, end):
+    """Returns a list of prime numbers between start and end (inclusive)."""
+    primes = [n for n in range(start, end+1) if is_prime(n)]
+    return primes
